@@ -14,19 +14,48 @@ export const CardItemList = () => {
       }
       return prevCardCount + 1;
     });
-    console.log(cardList);
+    if (countSelectCard >= 2) {
+      setPushSelectedCard([]);
+    } else {
+      setPushSelectedCard(
+        cardList.filter((card) => card.isOpen && !card.isDisabled)
+      );
+    }
   }, [cardList]);
+  useEffect(() => {
+    if (pushSelectedCard.length > 1) {
+      if (pushSelectedCard[0].name !== pushSelectedCard[1].name) {
+        setTimeout(() => {
+          setCardList(
+            cardList.map((card) =>
+              card.isOpen && card.isDisabled
+                ? { ...card, isOpen: true }
+                : { ...card, isOpen: false }
+            )
+          );
+        }, 1000);
+      } else {
+        setCardList(
+          cardList.map((card) => {
+            if (
+              card.name === pushSelectedCard[0].name ||
+              card.name === pushSelectedCard[1].name
+            ) {
+              return { ...card, isOpen: true, isDisabled: true };
+            }
+            return { ...card };
+          })
+        );
+      }
+    }
+  }, [pushSelectedCard]);
 
   const onClickHandler = (currentId) => {
     setCardList((prevCardState) => {
       return prevCardState.map((prevCard) => {
-        if (countSelectCard >= 2) {
-          return { ...prevCard, isOpen: false };
-        } else {
-          return prevCard.id === currentId
-            ? { ...prevCard, isOpen: true }
-            : { ...prevCard, isOpen: prevCard.isOpen };
-        }
+        return prevCard.id === currentId
+          ? { ...prevCard, isOpen: true }
+          : { ...prevCard, isOpen: prevCard.isOpen };
       });
     });
   };
@@ -41,6 +70,7 @@ export const CardItemList = () => {
             image={item.pic}
             onClick={() => onClickHandler(item.id)}
             isOpen={item.isOpen}
+            isDisabled={item.isDisabled}
           ></CardItem>
         );
       })}
